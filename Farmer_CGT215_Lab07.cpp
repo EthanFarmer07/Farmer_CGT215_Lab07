@@ -15,8 +15,8 @@ int main() {
 
     // Create the ball.
     PhysicsCircle ball;
-    ball.setCenter(Vector2f(400, 300));
-    ball.applyImpulse(Vector2f(0.2, 0.1));
+    ball.setCenter(Vector2f(200, 100));
+    ball.applyImpulse(Vector2f(0.3, 0));
     ball.setRadius(20);
     world.AddPhysicsBody(ball);
 
@@ -37,16 +37,23 @@ int main() {
     // Create the left wall.
     PhysicsRectangle leftWall;
     leftWall.setSize(Vector2f(20, 600));
-    leftWall.setCenter(Vector2f(790, 300));
+    leftWall.setCenter(Vector2f(10, 300));
     leftWall.setStatic(true);
     world.AddPhysicsBody(leftWall);
 
     // Create the right wall.
     PhysicsRectangle rightWall;
     rightWall.setSize(Vector2f(20, 600));
-    rightWall.setCenter(Vector2f(10, 300));
+    rightWall.setCenter(Vector2f(790, 300));
     rightWall.setStatic(true);
     world.AddPhysicsBody(rightWall);
+
+    // Create center block.
+    PhysicsRectangle centerBlock;
+    centerBlock.setSize(Vector2f(60, 60));
+    centerBlock.setCenter(Vector2f(400, 300));
+    centerBlock.setStatic(true);
+    world.AddPhysicsBody(centerBlock);
 
     // Counts the "thuds" when floor collision happens.
     int thudCount(0);
@@ -73,6 +80,18 @@ int main() {
         thudCount++;
     };
 
+    // Counts the "bangs" when the ball hits the center block.
+    int bangCount(0);
+    centerBlock.onCollision = [&bangCount, &centerBlock, &window](PhysicsBodyCollisionResult result) {
+        bangCount++;
+        cout << "Bang " << bangCount << endl;
+        
+        // Ends the code if ball hits the center block 3 times.
+        if (bangCount == 3) {
+            exit(0);
+        }
+    };
+
     Clock clock;
     Time lastTime(clock.getElapsedTime());
     while (true) {
@@ -84,12 +103,15 @@ int main() {
             world.UpdatePhysics(deltaTimeMS);
             lastTime = currentTime;
         }
+
+        // Create the frame.
         window.clear(Color(0, 0, 0));
         window.draw(ball);
         window.draw(floor);
         window.draw(ceiling);
         window.draw(leftWall);
         window.draw(rightWall);
+        window.draw(centerBlock);
         window.display();
     }
 }
